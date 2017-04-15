@@ -16,8 +16,8 @@ CREATE TABLE players (
 
 CREATE TABLE matches (
     id      SERIAL PRIMARY KEY,
-    winner  INTEGER,
-    loser   INTEGER
+    winner  INTEGER REFERENCES players(id),
+    loser   INTEGER REFERENCES players(id)
 );
 
 CREATE VIEW report_match_table AS

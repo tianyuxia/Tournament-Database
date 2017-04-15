@@ -5,44 +5,44 @@
 
 import psycopg2
 
+def data_connection(func):
+    def wrapper(*args, **kargs):
+        db = connect()
+        c = db.cursor()
+        return func(db)
+        db.close()
+    return wrapper
+
 def connect():
     """Connect to the PostgreSQL database.  Returns a database connection."""
     return psycopg2.connect("dbname=tournament")
 
-
+@data_process
 def deleteMatches():
     """Remove all the match records from the database."""
-    db = connect()
-    c = db.cursor()
     c.execute("DELETE FROM matches;")
     db.commit()
-    db.close()
 
+@data_process
 def deletePlayers():
     """Remove all the player records from the database."""
-    db = connect()
-    c = db.cursor()
     c.execute("DELETE FROM players;")
     db.commit()
-    db.close()
 
+@data_process
 def countPlayers():
     """Returns the number of players currently registered."""
-    db = connect()
-    c = db.cursor()
     c.execute("SELECT count(*) FROM players;")
     player_count = c.fetchall()[0][0]
     return player_count
-    db.close()
 
+@data_process
 def countMatches():
-    db = connect()
-    c = db.cursor()
     c.execute("SELECT count(*) FROM matches;")
     match_count = c.fetchall()[0][0]
     return match_count
-    db.close()
 
+@data_process
 def registerPlayer(name):
     """Adds a player to the tournament database.
   
@@ -52,12 +52,11 @@ def registerPlayer(name):
     Args:
       name: the player's full name (need not be unique).
     """
-    db = connect()
-    c = db.cursor()
     c.execute("INSERT INTO players (name) VALUES (%s);", (name, ))
     db.commit()
-    db.close()
 
+
+@data_process
 def playerStandings():
     """Returns a list of the players and their win records, sorted by wins.
 
@@ -72,13 +71,11 @@ def playerStandings():
         matches: the number of matches the player has played
     """
     # Selecting from created view
-    db = connect()
-    c = db.cursor()
     c.execute("SELECT * FROM report_match_table;") 
     player_standing = c.fetchall()
     return player_standing
-    db.close()
 
+@data_process
 def reportMatch(winner, loser):
     """Records the outcome of a single match between two players.
 
@@ -86,11 +83,9 @@ def reportMatch(winner, loser):
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
-    db = connect()
-    c = db.cursor()
     c.execute("INSERT INTO matches (winner, loser) VALUES (%s, %s);", (winner, loser))
     db.commit()
-    db.close()
+ 
  
 def swissPairings():
     """Returns a list of pairs of players for the next round of a match.
